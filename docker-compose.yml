@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  influxdb:
+    image: influxdb:1.8
+    container_name: influxdb
+    volumes:
+      - ./influxdb:/var/lib/influxdb
+    ports:
+      - "8086:8086"
+    environment:
+      - INFLUXDB_DB=printer_farm
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+
+  prusaconnect:
+    build: ./services/prusaconnect
+    env_file: .env
+    depends_on:
+      - influxdb
+
+  formlabs:
+    build: ./services/formlabs
+    env_file: .env
+    depends_on:
+      - influxdb
